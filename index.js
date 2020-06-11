@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 const inquirer = require('inquirer')
 const fs = require('fs')
+const shell = require('shelljs')
 
 const CURRENT_DIR = process.cwd()
 const CHOICES = fs.readdirSync(`${__dirname}/templates`)
@@ -10,7 +11,7 @@ const QUESTIONS = [
         name: 'project-choice',
         type: 'list',
         message: 'What project would you like to create?',
-        choices: CHOICES,
+        choices: CHOICES
     },
     {
         name: 'project-name',
@@ -20,18 +21,29 @@ const QUESTIONS = [
             if (/^([A-Za-z\-\\_\d])+$/.test(input)) return true
             else
                 return 'Project name may only include letters, numbers, underscores and hashes.'
-        },
+        }
     },
+    {
+        name: 'install-node-modules',
+        type: 'list',
+        message: 'Do you want to install node_modules inside new project',
+        choices: ['yes', 'no']
+    }
 ]
 
 inquirer.prompt(QUESTIONS).then((answers) => {
     const projectChoice = answers['project-choice']
     const projectName = answers['project-name']
     const templatePath = `${__dirname}/templates/${projectChoice}`
+    const installNodeModules = answers['install-node-modules']
 
     fs.mkdirSync(`${CURRENT_DIR}/${projectName}`)
 
     createDirectoryTemplate(templatePath, projectName)
+
+    if (installNodeModules === 'yes') {
+        toInstallNodeModules(projectName)
+    }
 })
 
 function createDirectoryTemplate(templatePath, newProjectPath) {
@@ -52,8 +64,20 @@ function createDirectoryTemplate(templatePath, newProjectPath) {
 
             createDirectoryTemplate(
                 `${templatePath}/${file}`,
-                `${newProjectPath}/${file}`,
+                `${newProjectPath}/${file}`
             )
         }
     })
+}
+
+function toInstallNodeModules(projectName) {
+    const existPackageJson = fs.existsSync(`${CURRENT_DIR}/${projectName}/package.json`)
+
+    if (existPackageJson) {
+        shell.cd(`${CURRENT_DIR}/${projectName}`)
+
+        shell.echo('Installing node_modules..... wait a moment')
+
+        shell.exec('npm install')
+    }
 }
