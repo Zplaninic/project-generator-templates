@@ -1,5 +1,6 @@
-#### Generate different template projects (all of them include eslint and prettier config)
-- backend with Express/node/mongo 
+#### Generate different template projects
+- all of them include eslint and prettier config
+- backend with Express/Node/Mongo 
 - front with React
 - more to come 
 
